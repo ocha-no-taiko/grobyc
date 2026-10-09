@@ -16,8 +16,17 @@
       <h2 class="sec-title">${fmt(s.title)}</h2>
     </header>`;
 
+  // ロゴ文字（CYBORG フォントのアウトライン）。1文字=幅1200のマスに中央寄せ
+  const G = window.GROBYC_GLYPHS;
+  const glyph = (ch) => G.glyphs[ch]
+    ? `<svg viewBox="${-(1200 - G.glyphs[ch].adv) / 2 - 84} 0 1200 ${G.capHeight}" aria-hidden="true"><path d="${G.glyphs[ch].d}"/></svg>`
+    : fmt(ch);
+  const wordmark = (text) => `<span class="wm" role="img" aria-label="${fmt(text)}">${[...text].map(glyph).join('')}</span>`;
+
   const list = (items, cls = 'points') =>
     `<ul class="${cls}">${items.map((t) => `<li>${fmt(t)}</li>`).join('')}</ul>`;
+
+  document.querySelector('.brand').innerHTML = wordmark(d.hero.to);
 
   // ---------- nav ----------
   $('nav').innerHTML = d.nav.map((n) => `<a href="#${n.id}" data-id="${n.id}">${fmt(n.label)}</a>`).join('');
@@ -29,12 +38,25 @@
     <div class="hero-inner">
       <p class="eyebrow">${fmt(h.eyebrow)}</p>
       <h1 class="word" aria-label="${fmt(h.to)}" style="--n:${letters.length}">
-        ${letters.map((c, i) => `<span style="--i:${i}" aria-hidden="true">${c}</span>`).join('')}
+        ${letters.map((c, i) => `<span style="--i:${i}" aria-hidden="true">${glyph(c)}</span>`).join('')}
       </h1>
       <p class="hero-title">${fmt(h.title)}</p>
       <p class="hero-lead">${fmt(h.lead)}</p>
     </div>
     <a class="scroll" href="#definition">${fmt(h.scroll)}<i></i></a>`;
+
+  // ---------- caption ----------
+  const cp = d.caption;
+  $('caption').innerHTML = `
+    <div class="caption reveal">
+      <div class="cap-side">
+        <p class="cap-label">${fmt(cp.label)}</p>
+        <p class="cap-name">${wordmark(cp.name)}</p>
+        <p class="cap-alias">${fmt(cp.alias)}</p>
+        <p class="cap-concept">${fmt(cp.concept)}</p>
+      </div>
+      <p class="cap-text">${fmt(cp.text)}</p>
+    </div>`;
 
   // ---------- definition ----------
   const df = d.definition;
@@ -96,7 +118,8 @@
     </div>`;
   const block = (b) => {
     switch (b.type) {
-      case 'voice': return `<p class="voice"><span class="who">${fmt(o.speaker)}</span>「${fmt(b.text)}」</p>`;
+      case 'text': return `<p class="text">${fmt(b.text)}</p>`;
+      case 'key': return `<p class="key">${fmt(b.text)}</p>`;
       case 'points': return list(b.items);
       case 'define': return `<div class="define"><span>${fmt(b.label)}</span><p>${fmt(b.text)}</p></div>`;
       case 'conclusion': return `<p class="conclusion">${fmt(b.text)}</p>`;
@@ -204,7 +227,7 @@
   // ---------- footer ----------
   const mt = d.meta;
   $('footer').innerHTML = `
-    <p class="ft-word" aria-hidden="true">${fmt(h.to)}</p>
+    <p class="ft-word" aria-hidden="true">${[...h.to].map(glyph).join('')}</p>
     <div class="ft-row">
       <p>${fmt(h.title)} — ${fmt(mt.author)}</p>
       <a href="${mt.portfolio.url}" rel="noopener">${fmt(mt.portfolio.label)} ↗</a>
